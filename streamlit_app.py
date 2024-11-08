@@ -107,8 +107,32 @@ table['PVProduction'] = table.apply(PVprod, axis=1)
 # Correct Storage Power in case PV production is negative
 table['StoragePower'] = table.apply(StoragePW, axis=1)
 
+# Sums
+# -------------------------
+sum_produzione = table['PVProduction'].sum()/4
+sum_consumo = table['Consumption'].sum()/4
+
+sum_venduta = table['FeedIn'].sum()/4
+sum_batteria = table['StoragePower'].sum()/4
+sum_acquistata = table['Purchased'].sum()/4
+sum_autoconsumo = sum_consumo - sum_acquistata
+sum_autoconsumo2 = sum_produzione - sum_batteria - sum_venduta
+
+#st.write("Produzione: "+'{0:.1f}'.format(sum_produzione)+" kWh")
+#st.write("Consumo: "+'{0:.1f}'.format(sum_consumo)+" kWh")
+
 # Graphs
 # -------------------------
+
+# Riassunto
+x=['Produzione ('+'{0:.1f}'.format(sum_produzione)+' kWh)', 'Consumo ('+'{0:.1f}'.format(sum_consumo)+' kWh)']
+fig = go.Figure()
+fig.add_trace(go.Bar(x=x, y=[sum_autoconsumo, sum_autoconsumo], name='Autoconsumo ('+'{0:.1f}'.format(sum_autoconsumo)+' kWh)', marker_color=colors.qualitative.Plotly[7]))
+fig.add_trace(go.Bar(x=x, y=[sum_venduta, 0], name='Venduta ('+'{0:.1f}'.format(sum_venduta)+' kWh)', marker_color=colors.qualitative.Plotly[4]))
+fig.add_trace(go.Bar(x=x, y=[sum_batteria, 0], name='Accumulata in batteria ('+'{0:.1f}'.format(sum_batteria)+' kWh)', marker_color=colors.qualitative.Plotly[0]))
+fig.add_trace(go.Bar(x=x, y=[0, sum_acquistata], name='Acquistata ('+'{0:.1f}'.format(sum_acquistata)+' kWh)', marker_color=colors.qualitative.Plotly[3]))
+fig.update_layout(barmode='stack', title = 'Bilancio', yaxis_title="kWh")
+st.plotly_chart(fig, use_container_width=True)
 
 # Produzione e consumo
 fig = go.Figure()
